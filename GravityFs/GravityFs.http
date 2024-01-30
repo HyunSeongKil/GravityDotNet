@@ -1,0 +1,6 @@
+@GravityFs_HostAddress = http://localhost:5180
+
+GET {{GravityFs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
