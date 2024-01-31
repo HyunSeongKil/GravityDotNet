@@ -1,6 +1,9 @@
+using System.Text;
 using GravityFs;
 using GravityFs.Models;
 using GravityFs.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
@@ -48,9 +51,45 @@ builder.Services.AddQuartz(q =>
 });
 builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
-
-
+//
 builder.WebHost.UseUrls([$"https://*:{config.GetValue<int>("App:httpsPort")}", $"http://*:{config.GetValue<int>("App:httpPort")}"]);
+
+//
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        // options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = config.GetValue<string>("App:Issuer"),
+            ValidAudience = config.GetValue<string>("App:Audience"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.GetValue<string>("App:SecretKey"))),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireClaim("Admin"))
+    .AddPolicy("User", policy => policy.RequireClaim("User"));
+
+//
+// builder.Host.ConfigureWebHostDefaults(webBuilder =>
+// {
+//     webBuilder.UseStartup<Startup>().UseKestrel(options =>
+//     {
+//         options.ListenAnyIP(config.GetValue<int>("App:httpPort"));
+//         options.ListenAnyIP(config.GetValue<int>("App:httpsPort"), listenOptions =>
+//         {
+//             listenOptions.UseHttps("certificate.pfx", "password");
+//         });
+//     });
+// });
+
 
 var app = builder.Build();
 
@@ -64,10 +103,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 
 app.UsePathBase(config.GetValue<string>("App:ContextPath"));
+
 
 
 app.Run();

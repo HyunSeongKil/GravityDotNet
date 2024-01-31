@@ -18,7 +18,7 @@ public interface IFileService
   void DeleteFile(Atchmnfl atchmnfl);
   void DeleteFile(string fullPath);
 
-  void DeleteFile(string saveSubPath, string saveFilename);
+  void DeleteFile(string? saveSubPath, string? saveFilename);
 
 
   /// <summary>

@@ -57,7 +57,7 @@ public class GcResultMap : Dictionary<string, object>
   }
 
 
-  public static GcResultMap WithData(object data)
+  public static GcResultMap WithData(object? data)
   {
     GcResultMap result = new()
     {

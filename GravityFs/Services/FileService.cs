@@ -63,8 +63,13 @@ public class FileService(IConfiguration config) : IFileService
     DeleteFile(Path.Combine(savePath, atchmnfl.SaveSubPath!, atchmnfl.SaveFilename!));
   }
 
-  public void DeleteFile(string saveSubPath, string saveFilename)
+  public void DeleteFile(string? saveSubPath, string? saveFilename)
   {
+    if (savePath == null || saveSubPath == null || saveFilename == null)
+    {
+      return;
+    }
+
     DeleteFile(Path.Combine(savePath!, saveSubPath, saveFilename));
   }
 
